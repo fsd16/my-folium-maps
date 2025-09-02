@@ -19,7 +19,7 @@ jobs:
           python-version: "3.11"
 
       - name: Cache URL expansions
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: scripts/url_cache.json
           key: url-cache-${{ hashFiles('scripts/generate_map.py') }}
@@ -32,9 +32,11 @@ jobs:
       - name: Run map generation
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-        run: python scripts/generate_map.py
+        run: |
+          python scripts/generate_map.py || exit 78
 
       - name: Deploy to GitHub Pages
+        if: success()
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

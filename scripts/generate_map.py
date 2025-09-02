@@ -65,6 +65,14 @@ for page in database["results"]:  # type: ignore
 if not map_links:
     raise ValueError("No map links found in the Notion database")
 
+# ---------- DETECT NEW LINKS ----------
+new_links = [link for link in map_links if link not in cache]
+if not new_links:
+    print("No new links to process. Map generation skipped.")
+    exit(78)
+else:
+    print(f"Processing {len(new_links)} new links...")
+
 # ---------- EXPAND URLS & EXTRACT COORDS ----------
 coords = []
 for link in map_links:
