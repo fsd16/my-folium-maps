@@ -69,7 +69,7 @@ if not map_links:
 new_links = [link for link in map_links if link not in cache]
 if not new_links:
     print("No new links to process. Map generation skipped.")
-    exit(78)
+    exit()
 else:
     print(f"Processing {len(new_links)} new links...")
 
