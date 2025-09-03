@@ -22,8 +22,8 @@ jobs:
       - name: Cache URL expansions
         uses: actions/cache@v4
         with:
-          path: scripts/url_cache.json
-          key: url-cache-${{ hashFiles('scripts/generate_map.py') }}
+          path: scripts/cache/china_bucketlist.json
+          key: china_bucketlist-cache
 
       - name: Install dependencies
         run: |
@@ -34,10 +34,10 @@ jobs:
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
         run: |
-          python scripts/generate_map.py || exit 78
+          python scripts/china_bucketlist_map.py
+          python scripts/christchurch_rent_suburbs_map.py
 
       - name: Deploy to GitHub Pages
-        if: success()
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

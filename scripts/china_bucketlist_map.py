@@ -9,9 +9,9 @@ from notion_client import Client
 
 # ---------- CONFIG ----------
 BASE_PATH = Path(__file__).parent
-CACHE_FILE = BASE_PATH / "url_cache.json"
-OUTPUT_DIR = BASE_PATH.parent / "public"  # GitHub Pages folder
-OUTPUT_FILE = OUTPUT_DIR / "map.html"
+CACHE_FILE = BASE_PATH / "cache" / "china_bucketlist.json"
+OUTPUT_DIR = BASE_PATH.parent / "public"
+OUTPUT_FILE = OUTPUT_DIR / "china_bucketlist_map.html"
 
 DATABASE_ID = "24f33ffcade8804d8a83c74b5f601067"
 NOTION_TOKEN = os.environ.get("NOTION_TOKEN")
