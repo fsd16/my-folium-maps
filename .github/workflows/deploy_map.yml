@@ -33,12 +33,12 @@ jobs:
       - name: Run China Bucketlist map generation
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-          LINZ_API_KEY: ${{ secrets.LINZ_API_KEY }}
         run: |
           python scripts/china_bucketlist_map.py
 
       - name: Run map Christchurch Rent Suburbs Map generation
         env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           LINZ_API_KEY: ${{ secrets.LINZ_API_KEY }}
         run: |
           python scripts/christchurch_rent_suburbs_map.py
