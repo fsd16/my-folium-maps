@@ -10,7 +10,7 @@ from notion_client import Client
 # ---------- CONFIG ----------
 BASE_PATH = Path(__file__).parent
 CACHE_FILE = BASE_PATH / "url_cache.json"
-OUTPUT_DIR = BASE_PATH.parent / "docs"  # GitHub Pages folder
+OUTPUT_DIR = BASE_PATH.parent / "public"  # GitHub Pages folder
 OUTPUT_FILE = OUTPUT_DIR / "map.html"
 
 DATABASE_ID = "24f33ffcade8804d8a83c74b5f601067"
@@ -52,51 +52,53 @@ def extract_coords(url):
     return None
 
 
-# ---------- PULL LINKS FROM NOTION ----------
+# ---------- GET URLS, EXPAND URLS & EXTRACT COORDS ----------
+
 notion = Client(auth=NOTION_TOKEN)
 database = notion.databases.query(database_id=DATABASE_ID)
 
-map_links = []
-for page in database["results"]:  # type: ignore
-    prop = page["properties"].get("Maps Link")
-    if prop and prop.get("url"):
-        map_links.append(prop["url"])
-
-if not map_links:
-    raise ValueError("No map links found in the Notion database")
-
-# ---------- DETECT NEW LINKS ----------
-new_links = [link for link in map_links if link not in cache]
-if not new_links:
-    print("No new links to process. Map generation skipped.")
-    exit()
-else:
-    print(f"Processing {len(new_links)} new links...")
-
-# ---------- EXPAND URLS & EXTRACT COORDS ----------
 coords = []
-for link in map_links:
+markers = []
+
+for page in database["results"]:  # type: ignore
+    # Pull the map link
+    link_prop = page["properties"].get("Maps Link")
+    if not link_prop or not link_prop.get("url"):
+        continue
+    link = link_prop["url"]
+
+    # Pull the destination
+    dest_prop = page["properties"].get("Destination")
+    destination = ""
+    if dest_prop:
+        # Usually text properties are in dest_prop["title"]
+        title_content = dest_prop.get("title", [])
+        if title_content:
+            destination = title_content[0]["text"]["content"]
+
+    # Expand URL and extract coordinates
     try:
         expanded = expand_url(link)
         coord = extract_coords(expanded)
         if coord:
             coords.append(coord)
-            print(f"Found: {coord}")
+            markers.append((coord, destination))
+            print(f"Found: {coord} -> {destination}")
     except Exception as e:
         print(f"Failed to process {link}: {e}")
 
-if not coords:
-    raise ValueError("No valid coordinates extracted")
 
 # ---------- GENERATE MAP ----------
-m = folium.Map(location=coords[0], zoom_start=14)
-for lat, lon in coords:
-    folium.Marker([lat, lon]).add_to(m)
+m = folium.Map()
+
+for (lat, lon), destination in markers:
+    folium.Marker(
+        [lat, lon],
+        popup=destination,  # Shows when clicked
+        tooltip=destination,  # Shows on hover
+    ).add_to(m)
+
 
 m.fit_bounds(coords)
 m.save(OUTPUT_FILE)
 print(f"✅ Map saved as {OUTPUT_FILE}")
-
-# Optional: open locally for testing
-# import webbrowser
-# webbrowser.open(f"file://{OUTPUT_FILE}")
